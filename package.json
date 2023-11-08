@@ -16,6 +16,7 @@
   "scripts": {
     "build": "craco build",
     "start": "electron .",
+    "dev": "react-scripts start",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -39,6 +40,8 @@
   },
   "devDependencies": {
     "electron": "^27.0.3",
+    "electron-reload": "^2.0.0-alpha.1",
+    "electron-reloader": "^1.2.3",
     "webpack-node-externals": "^3.0.0"
   }
 }
