@@ -5,7 +5,6 @@ const fs = require('fs');
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 const ipcMain = electron.ipcMain;
-const dialog = electron.dialog;
 
 let mainWindow;
 
@@ -19,6 +18,7 @@ function createWindow() {
   // and load the index.html of the app.
   console.log(__dirname);
   mainWindow.loadFile(path.join(__dirname, "../build/index.html"));
+  mainWindow.webContents.openDevTools();
 }
 
 // This method will be called when Electron has finished
@@ -26,22 +26,23 @@ function createWindow() {
 // Some APIs can only be used after this event occurs.
 app.on("ready", createWindow);
 
-ipcMain.on('open-directory-dialog', (event) => {
-  dialog.showOpenDialog(mainWindow, {
-    properties: ['openDirectory'],
-  }).then(result => {
-    if (!result.canceled) {
-      const directoryPath = result.filePaths[0];
-      fs.readdir(directoryPath, (err, files) => {
-        if (err) {
-          console.log(err);
-        } else {
-          const mp3AndWavFiles = files.filter(file => path.extname(file).toLowerCase() === '.mp3' || path.extname(file).toLowerCase() === '.wav');
-          event.sender.send('selected-directory', directoryPath, mp3AndWavFiles);
-        }
-      });
+ipcMain.on('read-directory', (event, directory) => {
+  fs.readdir(directory, (err, files) => {
+    if (err) {
+      console.log(err);
+    } else {
+      const mp3Files = files.filter(file => path.extname(file).toLowerCase() === '.mp3');
+      event.sender.send('directory-files', mp3Files);
     }
-  }).catch(err => {
-    console.log(err);
   });
+});
+
+ipcMain.handle('is-directory', async (event, filePath) => {
+  try {
+    const stat = fs.statSync(filePath);
+    return stat.isDirectory();
+  } catch (err) {
+    console.log(err);
+    return false;
+  }
 });
